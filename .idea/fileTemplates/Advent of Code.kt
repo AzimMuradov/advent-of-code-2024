@@ -1,16 +1,10 @@
-#set( $Code = "bar" )
 fun main() {
-    fun part1(input: List<String>): Int {
-        return input.size
-    }
+    fun part1(input: List<String>): Int = TODO()
 
-    fun part2(input: List<String>): Int {
-        return input.size
-    }
+    fun part2(input: List<String>): Int = TODO()
 
-    check(part1(listOf("...")) == 1)
+    val input = readInputLines("day-${AOC_DAY}-input")
 
-    val input = readInput("Day$Day")
     part1(input).println()
     part2(input).println()
 }
