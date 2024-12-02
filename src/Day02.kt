@@ -4,7 +4,7 @@ import kotlin.math.abs
 fun main() {
     fun isReportSafe(report: List<Int>): Boolean {
         val diffs = report.zipWithNext { a, b -> b - a }
-        return (diffs.all { it > 0 } || diffs.all { it > 0 }) &&
+        return (diffs.all { it > 0 } || diffs.all { it < 0 }) &&
                 diffs.all { abs(it) in 1..3 }
     }
 
