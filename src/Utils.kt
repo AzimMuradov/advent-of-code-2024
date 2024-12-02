@@ -39,6 +39,12 @@ fun <T> List<T>.toPair() = Pair(this[0], this[1])
 fun <T> List<T>.toTriple() = Triple(this[0], this[1], this[2])
 
 /**
+ * Converts list to triple.
+ */
+fun <T> List<T>.workAsMut(block: MutableList<T>.() -> Unit): List<T> =
+    toMutableList().apply(block)
+
+/**
  * Converts string to md5 hash.
  */
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
