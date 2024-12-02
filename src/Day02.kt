@@ -4,19 +4,16 @@ import kotlin.math.abs
 fun main() {
     fun isReportSafe(report: List<Int>): Boolean {
         val diffs = report.zipWithNext { a, b -> b - a }
-        val isInc = (diffs.firstOrNull() ?: 0) > 0
-        val isSafe = diffs.all { diff ->
-            isInc == diff > 0 && abs(diff) in 1..3
-        }
-        return isSafe
+        return (diffs.all { it > 0 } || diffs.all { it > 0 }) &&
+                diffs.all { abs(it) in 1..3 }
     }
 
     fun part1(input: List<String>): Int = input
-        .map { line -> line.toInts() }
+        .map(String::toInts)
         .count(::isReportSafe)
 
     fun part2(input: List<String>): Int = input
-        .map { line -> line.toInts() }
+        .map(String::toInts)
         .map { report ->
             List(report.size) { i ->
                 report.workAsMut { removeAt(i) }
