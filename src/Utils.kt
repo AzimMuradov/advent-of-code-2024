@@ -45,6 +45,30 @@ fun <T> List<T>.workAsMut(block: MutableList<T>.() -> Unit): List<T> =
     toMutableList().apply(block)
 
 /**
+ * Returns the product of all elements in the collection.
+ */
+fun Iterable<Int>.product(): Int = fold(1, Int::times)
+
+/**
+ * Returns the product of all elements in the collection.
+ */
+fun Iterable<Long>.product(): Long = fold(1, Long::times)
+
+/**
+ * Returns the product of all elements in the sequence.
+ *
+ * The operation is _terminal_.
+ */
+fun Sequence<Int>.product(): Int = fold(1, Int::times)
+
+/**
+ * Returns the product of all elements in the sequence.
+ *
+ * The operation is _terminal_.
+ */
+fun Sequence<Long>.product(): Long = fold(1, Long::times)
+
+/**
  * Converts string to md5 hash.
  */
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
