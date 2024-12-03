@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.internal.config.LanguageFeature
+
+
 plugins {
     kotlin("jvm") version "2.1.0"
 }
@@ -14,4 +17,10 @@ tasks {
     }
 }
 
-kotlin.compilerOptions.freeCompilerArgs.add("-Xwhen-guards")
+kotlin {
+    sourceSets.all {
+        languageSettings {
+            enableLanguageFeature(LanguageFeature.WhenGuards.name)
+        }
+    }
+}
