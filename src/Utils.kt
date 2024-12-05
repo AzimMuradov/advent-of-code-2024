@@ -69,6 +69,11 @@ fun Sequence<Int>.product(): Int = fold(1, Int::times)
 fun Sequence<Long>.product(): Long = fold(1, Long::times)
 
 /**
+ * Returns a sequence of all occurrences of a [regular expression][regex] within the string.
+ */
+fun String.findAll(regex: Regex): Sequence<MatchResult> = regex.findAll(this)
+
+/**
  * Converts string to md5 hash.
  */
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
