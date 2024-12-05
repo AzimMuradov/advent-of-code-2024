@@ -1,4 +1,4 @@
-private data class Rule(val a: Int, val b: Int)
+private typealias Rule = Pair<Int, Int>
 private typealias Update = List<Int>
 
 
@@ -40,8 +40,7 @@ fun main() {
     val (rulesText, updatesText) = input.split("\n\n")
 
     val rules: Set<Rule> = rulesText.lines().mapTo(mutableSetOf()) { line ->
-        val (a, b) = line.toInts("|")
-        Rule(a, b)
+        line.toInts("|").toPair()
     }
     val updates = updatesText.lines().map { line ->
         line.toInts(",")
