@@ -1,3 +1,8 @@
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
+
 private data class State(
     val x: Int,
     val y: Int,
@@ -7,7 +12,7 @@ private data class State(
 private enum class Dir { T, R, D, L }
 
 
-fun main() {
+suspend fun main() = coroutineScope {
     fun getInitPos(mapYX: List<String>): Pair<Int, Int> {
         val indices = mapYX.indices
 
@@ -114,42 +119,42 @@ fun main() {
 
     fun part1(mapYX: List<String>): Int = getPathPositions(mapYX).count()
 
-    fun part2(mapYX: List<String>): Int {
+    suspend fun part2(mapYX: List<String>): Int {
         val size = mapYX.size
 
         val initPos = getInitPos(mapYX)
         val placesToPlaceObs = getPathPositions(mapYX) - initPos
 
-        var loopCnt = 0
+        val tasks = placesToPlaceObs.map { (x, y) ->
+            async {
+                val mapYX = run {
+                    val map = List(size) { x ->
+                        MutableList(size) { y ->
+                            mapYX[x][y]
+                        }
+                    }
+                    map[y][x] = '#'
+                    map.map { it.joinToString(separator = "") }
+                }
+                val (obYX, obXY) = getObstacles(mapYX)
 
-        for ((x, y) in placesToPlaceObs) {
-            val mapYX = run {
-                val map = List(size) { x ->
-                    MutableList(size) { y ->
-                        mapYX[x][y]
+                val log = mutableListOf(
+                    State(initPos.first, initPos.second, Dir.T),
+                )
+                while (true) {
+                    val s = getNextState(log.last(), obYX, obXY) ?: break
+
+                    if (s in log) {
+                        return@async true
+                    } else {
+                        log += s
                     }
                 }
-                map[y][x] = '#'
-                map.map { it.joinToString(separator = "") }
-            }
-            val (obYX, obXY) = getObstacles(mapYX)
-
-            val log = mutableListOf(
-                State(initPos.first, initPos.second, Dir.T),
-            )
-            while (true) {
-                val s = getNextState(log.last(), obYX, obXY) ?: break
-
-                if (s in log) {
-                    loopCnt++
-                    break
-                } else {
-                    log += s
-                }
+                return@async false
             }
         }
 
-        return loopCnt
+        return tasks.awaitAll().count { it }
     }
 
 
