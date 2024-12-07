@@ -40,7 +40,7 @@ fun main() {
 
 
 private fun CalibrationEquation.canBeProducedWith(operators: List<(Long, Long) -> Long>): Boolean {
-    val isCorrect = DeepRecursiveFunction<Pair<Long, Int>, Boolean> { (value, operandsIndex) ->
+    val canBeProduced = DeepRecursiveFunction<Pair<Long, Int>, Boolean> { (value, operandsIndex) ->
         when {
             value > testValue -> false
             operandsIndex == operands.size -> value == testValue
@@ -52,5 +52,5 @@ private fun CalibrationEquation.canBeProducedWith(operators: List<(Long, Long) -
             }
         }
     }
-    return isCorrect(operands.first() to 1)
+    return canBeProduced(operands.first() to 1)
 }
