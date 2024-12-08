@@ -1,9 +1,9 @@
 fun main() {
-    fun findAntennas(mapYX: List<String>) =
-        buildMap<Char, MutableList<Pair<Int, Int>>> {
+    fun findAntennas(mapYX: List<String>): Map<Char, List<Pos>> =
+        buildMap<Char, MutableList<Pos>> {
             mapYX.forEachIndexed { y, line ->
                 line.forEachIndexed { x, freq ->
-                    getOrPut(freq, ::mutableListOf).add(Pair(x, y))
+                    getOrPut(freq, ::mutableListOf) += Pos(x, y)
                 }
             }
             keys.filterNot(Char::isLetterOrDigit).forEach(::remove)
@@ -11,63 +11,42 @@ fun main() {
 
 
     fun part1(mapYX: List<String>): Int {
+        val rect = Rect(mapYX.size, mapYX.size)
+
         val antennas = findAntennas(mapYX)
 
-        val antinodes = mutableSetOf<Pair<Int, Int>>()
-
-        antennas.forEach { freq, positions ->
-            for ((i, a) in positions.withIndex()) {
-                for (b in positions.slice(i + 1..positions.lastIndex)) {
-                    val (aX, aY) = a
-                    val (bX, bY) = b
-
-                    antinodes += Pair(
-                        aX + 2 * (bX - aX),
-                        aY + 2 * (bY - aY),
-                    )
-                    antinodes += Pair(
-                        bX + 2 * (aX - bX),
-                        bY + 2 * (aY - bY),
-                    )
+        val antinodes = buildSet {
+            antennas.forEach { freq, positions ->
+                for ((i, a) in positions.withIndex()) {
+                    for (b in positions.slice(i + 1..positions.lastIndex)) {
+                        add(a + 2 * (b - a))
+                        add(b + 2 * (a - b))
+                    }
                 }
             }
         }
 
-        return antinodes.count { (x, y) ->
-            x in mapYX.indices && y in mapYX.indices
-        }
+        return antinodes.count(rect::contains)
     }
 
     fun part2(mapYX: List<String>): Int {
+        val rect = Rect(mapYX.size, mapYX.size)
+
         val antennas = findAntennas(mapYX)
 
-        val antinodes = mutableSetOf<Pair<Int, Int>>()
+        val antinodes = buildSet {
+            antennas.forEach { freq, positions ->
+                for ((i, a) in positions.withIndex()) {
+                    for (b in positions.slice(i + 1..positions.lastIndex)) {
+                        generateSequence(1, Int::inc)
+                            .map { n -> a + n * (b - a) }
+                            .takeWhile(rect::contains)
+                            .forEach(::add)
 
-        antennas.forEach { freq, positions ->
-            for ((i, a) in positions.withIndex()) {
-                for (b in positions.slice(i + 1..positions.lastIndex)) {
-                    val (aX, aY) = a
-                    val (bX, bY) = b
-
-                    run {
-                        var cnt = 1
-                        while ((aX + cnt * (bX - aX)) in mapYX.indices && (aY + cnt * (bY - aY)) in mapYX.indices) {
-                            antinodes += Pair(
-                                aX + cnt * (bX - aX),
-                                aY + cnt * (bY - aY),
-                            )
-                            cnt++
-                        }
-                    }
-                    run {
-                        var cnt = 1
-                        while ((bX + cnt * (aX - bX)) in mapYX.indices && (bY + cnt * (aY - bY)) in mapYX.indices) {
-                            antinodes += Pair(
-                                bX + cnt * (aX - bX),
-                                bY + cnt * (aY - bY),
-                            )
-                            cnt++
-                        }
+                        generateSequence(1, Int::inc)
+                            .map { n -> b + n * (a - b) }
+                            .takeWhile(rect::contains)
+                            .forEach(::add)
                     }
                 }
             }
