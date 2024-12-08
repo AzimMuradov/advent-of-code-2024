@@ -1,0 +1,109 @@
+@JvmInline
+value class Pos private constructor(private val packedValue: Long) {
+
+    constructor(x: Int, y: Int) : this((x.toLong() shl 32) or (y.toLong() and 0xFFFFFFFF))
+
+
+    val x: Int get() = (packedValue shr 32).toInt()
+
+    val y: Int get() = (packedValue and 0xFFFFFFFF).toInt()
+
+
+    operator fun component1(): Int = x
+
+    operator fun component2(): Int = y
+
+
+    fun copy(x: Int = this.x, y: Int = this.y): Pos = Pos(x, y)
+
+
+    override fun toString(): String = "(x=$x, y=$y)"
+
+
+    companion object {
+
+        val ZERO: Pos = Pos(x = 0, y = 0)
+    }
+}
+
+@JvmInline
+value class Vec private constructor(private val packedValue: Long) {
+
+    constructor(x: Int, y: Int) : this((x.toLong() shl 32) or (y.toLong() and 0xFFFFFFFF))
+
+
+    val x: Int get() = (packedValue shr 32).toInt()
+
+    val y: Int get() = (packedValue and 0xFFFFFFFF).toInt()
+
+
+    operator fun component1(): Int = x
+
+    operator fun component2(): Int = y
+
+
+    fun copy(x: Int = this.x, y: Int = this.y): Vec = Vec(x, y)
+
+
+    override fun toString(): String = "(x=$x, y=$y)"
+
+
+    companion object {
+
+        val ZERO: Vec = Vec(x = 0, y = 0)
+    }
+}
+
+@JvmInline
+value class Rect private constructor(private val packedValue: Long) {
+
+    constructor(w: Int, h: Int) : this((w.toLong() shl 32) or (h.toLong() and 0xFFFFFFFF))
+
+
+    val w: Int get() = (packedValue shr 32).toInt()
+
+    val h: Int get() = (packedValue and 0xFFFFFFFF).toInt()
+
+
+    operator fun component1(): Int = w
+
+    operator fun component2(): Int = h
+
+
+    fun copy(w: Int = this.w, h: Int = this.h): Rect = Rect(w, h)
+
+
+    override fun toString(): String = "(w=$w, h=$h)"
+
+
+    companion object {
+
+        val ZERO: Rect = Rect(w = 0, h = 0)
+    }
+}
+
+
+// Operators
+
+operator fun Pos.plus(vec: Vec) = Pos(x + vec.x, y + vec.y)
+
+operator fun Pos.minus(vec: Vec) = Pos(x - vec.x, y - vec.y)
+
+
+operator fun Pos.minus(other: Pos) = Vec(x - other.x, y - other.y)
+
+operator fun Int.times(vec: Vec) = Vec(this * vec.x, this * vec.y)
+
+operator fun Rect.contains(pos: Pos) = pos.x in 0..<w && pos.y in 0..<h
+
+
+// Pair interop
+
+fun Pos.toPair(): Pair<Int, Int> = x to y
+
+fun Pair<Int, Int>.toPos(): Pos = Pos(first, second)
+
+
+fun Vec.toPair(): Pair<Int, Int> = x to y
+
+fun Pair<Int, Int>.toVec(): Vec = Vec(first, second)
