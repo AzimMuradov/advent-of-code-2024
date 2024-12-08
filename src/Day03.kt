@@ -4,18 +4,18 @@ fun main() {
         .toInts(",")
         .product()
 
-    fun String.findAll(regex: Regex): Sequence<String> = regex
-        .findAll(this)
-        .map(MatchResult::value)
+    fun String.findAllSubstrings(regex: Regex) =
+        findAll(regex).map(MatchResult::value)
+
 
     fun part1(input: String): Int = input
-        .findAll(Regex(MUL_PATTERN))
+        .findAllSubstrings(Regex(MUL_PATTERN))
         .sumOf(::runMul)
 
     fun part2(input: String): Int {
         val commands = run {
             val regex = Regex("($DO_PATTERN|$DONT_PATTERN|$MUL_PATTERN)")
-            input.findAll(regex)
+            input.findAllSubstrings(regex)
         }
 
         var sum = 0
@@ -30,11 +30,13 @@ fun main() {
         return sum
     }
 
+
     val input = readInputText("day-03-input")
 
     part1(input).println()
     part2(input).println()
 }
+
 
 const val DO_PATTERN = """do\(\)"""
 const val DONT_PATTERN = """don't\(\)"""

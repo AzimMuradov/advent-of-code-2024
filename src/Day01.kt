@@ -8,6 +8,7 @@ fun main() {
         }
         .unzip()
 
+
     fun part1(input: List<String>): Int = readLists(input)
         .let { (xs1, xs2) ->
             xs1.sorted() zip xs2.sorted()
@@ -21,6 +22,7 @@ fun main() {
             val frequencyMap = xs2.groupingBy { it }.eachCount()
             xs1.sumOf { x -> x * frequencyMap.getOrDefault(x, 0) }
         }
+
 
     val input = readInputLines("day-01-input")
 

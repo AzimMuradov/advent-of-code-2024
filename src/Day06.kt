@@ -7,19 +7,24 @@ private data class State(
     val x: Int,
     val y: Int,
     val dir: Dir,
-)
+) {
+
+    val pos = Pos(x, y)
+
+    operator fun component4() = pos
+}
 
 private enum class Dir { T, R, D, L }
 
 
 suspend fun main() = coroutineScope {
-    fun getInitPos(mapYX: List<String>): Pair<Int, Int> {
+    fun getInitPos(mapYX: List<String>): Pos {
         val indices = mapYX.indices
 
         for (x in indices) {
             for (y in indices) {
                 if (mapYX[y][x] == '^') {
-                    return Pair(x, y)
+                    return Pos(x, y)
                 }
             }
         }
@@ -27,7 +32,7 @@ suspend fun main() = coroutineScope {
         error("init pos missing")
     }
 
-    fun getObstacles(mapYX: List<String>): Pair<List<List<Int>>, List<List<Int>>> {
+    fun getObstaclePositions(mapYX: List<String>): Pair<List<List<Int>>, List<List<Int>>> {
         val indices = mapYX.indices
         val size = mapYX.size
 
@@ -72,43 +77,28 @@ suspend fun main() = coroutineScope {
         }
     }
 
-    fun getPathPositions(mapYX: List<String>): MutableSet<Pair<Int, Int>> {
+    fun getPathPositions(mapYX: List<String>): Set<Pos> {
         val lastIndex = mapYX.lastIndex
 
-        val initPos = getInitPos(mapYX)
-        val (obYX, obXY) = getObstacles(mapYX)
+        val (initX, initY) = getInitPos(mapYX)
+        val (obYX, obXY) = getObstaclePositions(mapYX)
 
-        var state = State(initPos.first, initPos.second, Dir.T)
+        var state = State(initX, initY, Dir.T)
 
-        val pathPositions = mutableSetOf<Pair<Int, Int>>()
+        val pathPositions = mutableSetOf<Pos>()
 
         while (true) {
-            val (x, y, dir) = state
+            val (x, y, dir, pos) = state
 
             val nextState = getNextState(state, obYX, obXY)
 
-            val (from, to) = if (nextState != null) {
-                val (nextX, nextY) = nextState
-                when (dir) {
-                    Dir.T -> (x to nextY) to (x to y)
-                    Dir.R -> (x to y) to (nextX to y)
-                    Dir.D -> (x to y) to (x to nextY)
-                    Dir.L -> (nextX to y) to (x to y)
-                }
-            } else {
-                when (dir) {
-                    Dir.T -> (x to 0) to (x to y)
-                    Dir.R -> (x to y) to (lastIndex to y)
-                    Dir.D -> (x to y) to (x to lastIndex)
-                    Dir.L -> (0 to y) to (x to y)
-                }
+            val nextPos = nextState?.pos ?: when (dir) {
+                Dir.T -> Pos(x, 0)
+                Dir.R -> Pos(lastIndex, y)
+                Dir.D -> Pos(x, lastIndex)
+                Dir.L -> Pos(0, y)
             }
-
-            for (x in from.first..to.first) {
-                for (y in from.second..to.second) {
-                    pathPositions += x to y
-                }
-            }
+            pathPositions += positionsList(pos, nextPos)
 
             state = nextState ?: break
         }
@@ -117,37 +107,36 @@ suspend fun main() = coroutineScope {
     }
 
 
-    fun part1(mapYX: List<String>): Int = getPathPositions(mapYX).count()
+    fun part1(mapYX: List<String>): Int = getPathPositions(mapYX).size
 
     suspend fun part2(mapYX: List<String>): Int {
-        val size = mapYX.size
-
         val initPos = getInitPos(mapYX)
-        val placesToPlaceObs = getPathPositions(mapYX) - initPos
+        val positionsToPlaceObs = getPathPositions(mapYX) - initPos
 
-        val tasks = placesToPlaceObs.map { (x, y) ->
+        val tasks = positionsToPlaceObs.map { (x, y) ->
             async {
-                val mapYX = run {
-                    val map = List(size) { x ->
-                        MutableList(size) { y ->
-                            mapYX[x][y]
+                val mapYX = mapYX.mapIndexed { i, line ->
+                    if (i == y) {
+                        buildString {
+                            append(line)
+                            set(x, '#')
                         }
+                    } else {
+                        line
                     }
-                    map[y][x] = '#'
-                    map.map { it.joinToString(separator = "") }
                 }
-                val (obYX, obXY) = getObstacles(mapYX)
+                val (obYX, obXY) = getObstaclePositions(mapYX)
 
                 val log = mutableListOf(
-                    State(initPos.first, initPos.second, Dir.T),
+                    State(initPos.x, initPos.y, Dir.T),
                 )
                 while (true) {
-                    val s = getNextState(log.last(), obYX, obXY) ?: break
+                    val nextState = getNextState(log.last(), obYX, obXY) ?: break
 
-                    if (s in log) {
+                    if (nextState in log) {
                         return@async true
                     } else {
-                        log += s
+                        log += nextState
                     }
                 }
                 return@async false

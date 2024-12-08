@@ -8,6 +8,7 @@ fun main() {
                 diffs.all { abs(it) in 1..3 }
     }
 
+
     fun part1(input: List<String>): Int = input
         .map(String::toInts)
         .count(::isReportSafe)
@@ -22,6 +23,7 @@ fun main() {
         .count { reportVariants ->
             reportVariants.any(::isReportSafe)
         }
+
 
     val input = readInputLines("day-02-input")
 

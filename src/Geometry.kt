@@ -107,3 +107,24 @@ fun Pair<Int, Int>.toPos(): Pos = Pos(first, second)
 fun Vec.toPair(): Pair<Int, Int> = x to y
 
 fun Pair<Int, Int>.toVec(): Vec = Vec(first, second)
+
+
+// Other
+
+fun positionsList(a: Pos, b: Pos): List<Pos> {
+    val (fromX, toX) = if (a.x < b.x) a.x to b.x else b.x to a.x
+    val (fromY, toY) = if (a.y < b.y) a.y to b.y else b.y to a.y
+
+    return (fromX..toX).flatMap { x -> (fromY..toY).map { y -> Pos(x, y) } }
+}
+
+fun positionsSeq(a: Pos, b: Pos): Sequence<Pos> = sequence {
+    val (fromX, toX) = if (a.x < b.x) a.x to b.x else b.x to a.x
+    val (fromY, toY) = if (a.y < b.y) a.y to b.y else b.y to a.y
+
+    for (x in fromX..toX) {
+        for (y in fromY..toY) {
+            yield(Pos(x, y))
+        }
+    }
+}
