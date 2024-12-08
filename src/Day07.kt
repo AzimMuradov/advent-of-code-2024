@@ -1,18 +1,28 @@
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
+
 private data class CalibrationEquation(
     val testValue: Long,
     val operands: List<Long>,
 )
 
 
-fun main() {
-    fun calculateTotalCalibrationResult(
+suspend fun main() = coroutineScope {
+    suspend fun calculateTotalCalibrationResult(
         calibrationEquations: List<CalibrationEquation>,
         operators: List<(Long, Long) -> Long>,
     ): Long = calibrationEquations
-        .filter { equation -> equation.canBeProducedWith(operators) }
-        .sumOf(CalibrationEquation::testValue)
+        .map { equation ->
+            async { equation to equation.canBeProducedWith(operators) }
+        }
+        .awaitAll()
+        .filter { (_, cond) -> cond }
+        .sumOf { (eq, _) -> eq.testValue }
 
-    fun part1(calibrationEquations: List<CalibrationEquation>): Long = calculateTotalCalibrationResult(
+
+    suspend fun part1(calibrationEquations: List<CalibrationEquation>): Long = calculateTotalCalibrationResult(
         calibrationEquations,
         operators = listOf(
             Long::plus,
@@ -20,7 +30,7 @@ fun main() {
         ),
     )
 
-    fun part2(calibrationEquations: List<CalibrationEquation>): Long = calculateTotalCalibrationResult(
+    suspend fun part2(calibrationEquations: List<CalibrationEquation>): Long = calculateTotalCalibrationResult(
         calibrationEquations,
         operators = listOf(
             Long::plus,
@@ -28,6 +38,7 @@ fun main() {
             { a, b -> "$a$b".toLong() },
         ),
     )
+
 
     val calibrationEquations = readInputLines("day-07-input").map {
         val (testValueString, operandsString) = it.split(": ")
