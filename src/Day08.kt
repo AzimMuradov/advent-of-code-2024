@@ -38,15 +38,13 @@ fun main() {
             antennas.forEach { freq, positions ->
                 for ((i, a) in positions.withIndex()) {
                     for (b in positions.slice(i + 1..positions.lastIndex)) {
-                        generateSequence(1, Int::inc)
+                        fun Sequence<Int>.addAntinodes() = this
                             .map { n -> a + n * (b - a) }
                             .takeWhile(rect::contains)
                             .forEach(::add)
 
-                        generateSequence(1, Int::inc)
-                            .map { n -> b + n * (a - b) }
-                            .takeWhile(rect::contains)
-                            .forEach(::add)
+                        generateSequence(0, Int::dec).addAntinodes()
+                        generateSequence(1, Int::inc).addAntinodes()
                     }
                 }
             }
