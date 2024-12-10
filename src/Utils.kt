@@ -73,6 +73,36 @@ fun Sequence<Long>.product(): Long = fold(1, Long::times)
  */
 fun String.findAll(regex: Regex): Sequence<MatchResult> = regex.findAll(this)
 
+inline fun <T> List<T>.indexOfFirstOrNull(
+    fromIndex: Int, toIndex: Int,
+    predicate: (T) -> Boolean,
+): Int? = this
+    .subList(fromIndex, toIndex)
+    .indexOfFirst(predicate)
+    .takeUnless { it == -1 }
+    ?.plus(fromIndex)
+
+inline fun <T> List<T>.indexOfFirstOrNull(
+    predicate: (T) -> Boolean,
+): Int? = this
+    .indexOfFirst(predicate)
+    .takeUnless { it == -1 }
+
+inline fun <T> List<T>.indexOfLastOrNull(
+    fromIndex: Int, toIndex: Int,
+    predicate: (T) -> Boolean,
+): Int? = this
+    .subList(fromIndex, toIndex)
+    .indexOfLast(predicate)
+    .takeUnless { it == -1 }
+    ?.plus(fromIndex)
+
+inline fun <T> List<T>.indexOfLastOrNull(
+    predicate: (T) -> Boolean,
+): Int? = this
+    .indexOfLast(predicate)
+    .takeUnless { it == -1 }
+
 /**
  * Converts string to md5 hash.
  */

@@ -1,13 +1,13 @@
 private typealias DiskMap = String
 
-private sealed interface DiskElement {
+private sealed interface DiskEntity {
 
     val size: Int
 
 
-    data class File(override val size: Int, val id: Int) : DiskElement
+    data class File(override val size: Int, val id: Int) : DiskEntity
 
-    data class FreeSpace(override val size: Int) : DiskElement
+    data class FreeSpace(override val size: Int) : DiskEntity
 }
 
 private sealed interface DiskBlock {
@@ -19,18 +19,18 @@ private sealed interface DiskBlock {
 
 
 fun main() {
-    fun DiskMap.elements(): MutableList<DiskElement> = this
+    fun DiskMap.entities(): MutableList<DiskEntity> = this
         .map(Char::digitToInt)
         .mapIndexedTo(mutableListOf()) { i, size ->
-            if (i % 2 == 0) DiskElement.File(size, i / 2)
-            else DiskElement.FreeSpace(size)
+            if (i % 2 == 0) DiskEntity.File(size, id = i / 2)
+            else DiskEntity.FreeSpace(size)
         }
 
-    fun List<DiskElement>.blocks(): MutableList<DiskBlock> = this
-        .flatMapTo(mutableListOf()) { element ->
-            when (element) {
-                is DiskElement.File -> List(element.size) { DiskBlock.File(element.id) }
-                is DiskElement.FreeSpace -> List(element.size) { DiskBlock.FreeSpace }
+    fun List<DiskEntity>.blocks(): MutableList<DiskBlock> = this
+        .flatMapTo(mutableListOf()) { entity ->
+            when (entity) {
+                is DiskEntity.File -> List(entity.size) { DiskBlock.File(entity.id) }
+                is DiskEntity.FreeSpace -> List(entity.size) { DiskBlock.FreeSpace }
             }
         }
 
@@ -38,73 +38,70 @@ fun main() {
         .mapIndexed { i, block ->
             when (block) {
                 is DiskBlock.File -> (i * block.id).toLong()
-                DiskBlock.FreeSpace -> 0
+                DiskBlock.FreeSpace -> 0L
             }
         }.sum()
 
 
     fun part1(diskMap: DiskMap): Long {
-        val diskBlocks = diskMap
-            .elements()
+        val blocks = diskMap
+            .entities()
             .blocks()
 
-        var fI = diskBlocks.lastIndex
         var fsI = 0
+        var fI = blocks.lastIndex
         while (fsI < fI) {
-            while (fsI < fI && diskBlocks[fI] !is DiskBlock.File) fI--
-            if (fsI >= fI) break
+            fI = blocks.indexOfLastOrNull(fsI, fI + 1) { block ->
+                block is DiskBlock.File
+            } ?: break
 
-            while (fsI < fI && diskBlocks[fsI] !is DiskBlock.FreeSpace) fsI++
-            if (fsI >= fI) break
+            fsI = blocks.indexOfFirstOrNull(fsI, fI + 1) { block ->
+                block is DiskBlock.FreeSpace
+            } ?: break
 
-            diskBlocks[fsI] = diskBlocks[fI]
-            diskBlocks[fI] = DiskBlock.FreeSpace
+            blocks[fsI] = blocks[fI]
+            blocks[fI] = DiskBlock.FreeSpace
 
             fI--
             fsI++
         }
 
-        return diskBlocks.filesystemChecksum()
+        return blocks.filesystemChecksum()
     }
 
     fun part2(diskMap: DiskMap): Long {
-        val diskElements = diskMap.elements()
+        val entities = diskMap.entities()
 
-        var fId = diskElements.lastIndex / 2
-        var fI = diskElements.lastIndex
+        var fId = entities.lastIndex / 2
+        var fI = entities.lastIndex
         while (fId >= 0 && fI >= 0) {
+            var fsI = 0
             fId--
 
-            var fsI = 0
+            fI = entities.indexOfLastOrNull(fsI, fI + 1) { entity ->
+                entity is DiskEntity.File && entity.id <= fId + 1
+            }!!
+            val f = entities[fI]
 
-            while (fI >= 0 && diskElements[fI] !is DiskElement.File) fI--
-            if (fI < 0) break
-            val f = diskElements[fI]
-
-            while (
-                fsI < fI &&
-                !(diskElements[fsI] is DiskElement.FreeSpace && diskElements[fsI].size >= f.size)
-            ) fsI++
-            if (fsI >= fI) {
-                fI--
-                continue
-            }
-            val fs = diskElements[fsI]
+            fsI = entities.indexOfFirstOrNull(fsI, fI + 1) { entity ->
+                entity is DiskEntity.FreeSpace && entity.size >= f.size
+            } ?: continue
+            val fs = entities[fsI]
 
             if (fs.size == f.size) {
-                diskElements[fsI] = f
-                diskElements[fI] = fs
+                entities[fsI] = f
+                entities[fI] = fs
                 fI--
             } else {
-                diskElements[fsI] = f
-                diskElements.add(fsI + 1, DiskElement.FreeSpace(fs.size - f.size))
+                entities[fsI] = f
+                entities.add(fsI + 1, DiskEntity.FreeSpace(fs.size - f.size))
                 fI++
-                diskElements[fI] = DiskElement.FreeSpace(f.size)
+                entities[fI] = DiskEntity.FreeSpace(f.size)
                 fI--
             }
         }
 
-        return diskElements
+        return entities
             .blocks()
             .filesystemChecksum()
     }
