@@ -109,6 +109,11 @@ fun Vec.toPair(): Pair<Int, Int> = x to y
 fun Pair<Int, Int>.toVec(): Vec = Vec(first, second)
 
 
+fun Rect.toPair(): Pair<Int, Int> = w to h
+
+fun Pair<Int, Int>.toRect(): Rect = Rect(first, second)
+
+
 // Other
 
 fun positionsList(a: Pos, b: Pos): List<Pos> {
