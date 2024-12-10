@@ -14,7 +14,7 @@ private data class State(
     operator fun component4() = pos
 }
 
-private enum class Dir { T, R, D, L }
+private enum class Dir { U, R, D, L }
 
 
 suspend fun main() = coroutineScope {
@@ -59,7 +59,7 @@ suspend fun main() = coroutineScope {
         val (x, y, dir) = state
 
         val res = when (dir) {
-            Dir.T -> obXY[x].lastOrNull { obY -> obY < y }
+            Dir.U -> obXY[x].lastOrNull { obY -> obY < y }
             Dir.R -> obYX[y].firstOrNull { obX -> obX > x }
             Dir.D -> obXY[x].firstOrNull { obY -> obY > y }
             Dir.L -> obYX[y].lastOrNull { obX -> obX < x }
@@ -67,10 +67,10 @@ suspend fun main() = coroutineScope {
 
         return if (res != null) {
             when (dir) {
-                Dir.T -> State(x, res + 1, Dir.R)
+                Dir.U -> State(x, res + 1, Dir.R)
                 Dir.R -> State(res - 1, y, Dir.D)
                 Dir.D -> State(x, res - 1, Dir.L)
-                Dir.L -> State(res + 1, y, Dir.T)
+                Dir.L -> State(res + 1, y, Dir.U)
             }
         } else {
             null
@@ -83,7 +83,7 @@ suspend fun main() = coroutineScope {
         val (initX, initY) = getInitPos(mapYX)
         val (obYX, obXY) = getObstaclePositions(mapYX)
 
-        var state = State(initX, initY, Dir.T)
+        var state = State(initX, initY, Dir.U)
 
         val pathPositions = mutableSetOf<Pos>()
 
@@ -93,7 +93,7 @@ suspend fun main() = coroutineScope {
             val nextState = getNextState(state, obYX, obXY)
 
             val nextPos = nextState?.pos ?: when (dir) {
-                Dir.T -> Pos(x, 0)
+                Dir.U -> Pos(x, 0)
                 Dir.R -> Pos(lastIndex, y)
                 Dir.D -> Pos(x, lastIndex)
                 Dir.L -> Pos(0, y)
@@ -128,7 +128,7 @@ suspend fun main() = coroutineScope {
                 val (obYX, obXY) = getObstaclePositions(mapYX)
 
                 val log = mutableListOf(
-                    State(initPos.x, initPos.y, Dir.T),
+                    State(initPos.x, initPos.y, Dir.U),
                 )
                 while (true) {
                     val nextState = getNextState(log.last(), obYX, obXY) ?: break
