@@ -2,21 +2,6 @@ private typealias WordSearch = List<String>
 
 
 fun main() {
-    fun WordSearch.dim() = size to first().length
-
-    fun WordSearch.mirrorHor() = map(String::reversed)
-    fun WordSearch.mirrorVer() = reversed()
-
-    fun WordSearch.transpose(): WordSearch {
-        val (n, m) = dim()
-        return List(m) { j ->
-            List(n) { i ->
-                this[i][j]
-            }.joinToString(separator = "")
-        }
-    }
-
-
     fun part1(input: List<String>): Int {
         /*
          * XMAS
@@ -61,7 +46,6 @@ fun main() {
             countDiag(input.mirrorHor().mirrorVer()),
         ).sum()
     }
-
 
     fun part2(input: List<String>): Int {
         /*

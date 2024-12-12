@@ -3,12 +3,11 @@ private typealias TopographicMap = List<String>
 
 fun main() {
     fun getNextPositions(map: TopographicMap, positions: Iterable<Pos>, height: Int): Sequence<Pos> {
-        val rect = Rect(map[0].length, map.size)
-        val moves = listOf(Vec(0, -1), Vec(0, 1), Vec(-1, 0), Vec(1, 0))
+        val rect = Rect.from(map)
 
         return positions
             .asSequence()
-            .flatMap { pos -> moves.map { move -> pos + move } }
+            .flatMap { pos -> Vec.MOVES.map { move -> pos + move } }
             .filter { pos -> pos in rect }
             .filter { (x, y) -> map[y][x] == (height + 1).digitToChar() }
     }

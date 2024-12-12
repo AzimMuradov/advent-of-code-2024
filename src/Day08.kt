@@ -11,7 +11,7 @@ fun main() {
 
 
     fun part1(mapYX: List<String>): Int {
-        val rect = Rect(mapYX.size, mapYX.size)
+        val rect = Rect.from(mapYX)
 
         val antennas = findAntennas(mapYX)
 
@@ -30,7 +30,7 @@ fun main() {
     }
 
     fun part2(mapYX: List<String>): Int {
-        val rect = Rect(mapYX.size, mapYX.size)
+        val rect = Rect.from(mapYX)
 
         val antennas = findAntennas(mapYX)
 
