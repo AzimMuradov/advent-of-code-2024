@@ -51,6 +51,13 @@ value class Vec private constructor(private val packedValue: Long) {
     companion object {
 
         val ZERO: Vec = Vec(x = 0, y = 0)
+
+        val MOVE_UP: Vec = Vec(x = 0, y = -1)
+        val MOVE_DOWN: Vec = Vec(x = 0, y = 1)
+        val MOVE_RIGHT: Vec = Vec(x = 1, y = 0)
+        val MOVE_LEFT: Vec = Vec(x = -1, y = 0)
+
+        val MOVES: List<Vec> = listOf(MOVE_UP, MOVE_DOWN, MOVE_RIGHT, MOVE_LEFT)
     }
 }
 
@@ -79,6 +86,8 @@ value class Rect private constructor(private val packedValue: Long) {
     companion object {
 
         val ZERO: Rect = Rect(w = 0, h = 0)
+
+        fun from(map: List<String>) = Rect(map[0].length, map.size)
     }
 }
 

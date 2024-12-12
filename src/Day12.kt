@@ -1,124 +1,87 @@
 fun main() {
-    fun part1(input: List<String>): Int {
+    fun discoverPlants(garden: List<String>): List<Set<Pos>> = buildList {
+        val rect = Rect.from(garden)
+
         val visited = mutableSetOf<Pos>()
 
-        val rect = Rect(input[0].length, input.size)
-        val moves = listOf(Vec(0, -1), Vec(0, 1), Vec(-1, 0), Vec(1, 0))
-
-        fun calculateFencePrice(start: Pos, c: Char): Pair<Int, Int> {
-            var totalArea = 0
-            var totalPerimeter = 0
-
-            var q = listOf(start)
-            while (q.isNotEmpty()) {
-                visited += q
-
-                val neighbours = q
-                    .flatMap { pos -> moves.map { move -> pos + move } }
-                    .filter { it in rect && input[it.y][it.x] == c }
-
-                val area = q.size
-                val perimeter = 4 * q.size - neighbours.count()
-
-                totalArea += area
-                totalPerimeter += perimeter
-
-                q = neighbours.toSet().filter { it !in visited }
+        fun searchForPlants(start: Pos, plant: Char): Set<Pos> {
+            val searchSequence = generateSequence(setOf(start) to setOf(start)) { (searchWave, plantPositions) ->
+                if (searchWave.isNotEmpty()) {
+                    val nextSearchWave = searchWave
+                        .asSequence()
+                        .flatMap { pos -> Vec.MOVES.map { move -> pos + move } }
+                        .filter { pos -> pos in rect && garden[pos.y][pos.x] == plant }
+                        .filter { pos -> pos !in plantPositions }
+                        .toSet()
+                    nextSearchWave to plantPositions + nextSearchWave
+                } else {
+                    null
+                }
             }
-
-            return totalArea to totalPerimeter
+            return searchSequence.last().second
         }
 
-        var sum = 0
-
-        for (x in input.indices) {
-            for (y in input.indices) {
+        for (x in garden.indices) {
+            for (y in garden.indices) {
                 if (Pos(x, y) in visited) continue
 
-                val (area, perimeter) = calculateFencePrice(Pos(x, y), input[y][x])
-                sum += area * perimeter
+                val plantPositions = searchForPlants(
+                    start = Pos(x, y),
+                    plant = garden[y][x],
+                )
+                visited += plantPositions
+
+                add(plantPositions)
             }
         }
-
-        return sum
     }
 
-    fun part2(input: List<String>): Int {
-        val visited = mutableSetOf<Pos>()
+    fun calculateTotalArea(plantPositions: Set<Pos>): Int = plantPositions.size
 
-        val rect = Rect(input[0].length, input.size)
-        val moves = listOf(Vec(0, -1), Vec(0, 1), Vec(-1, 0), Vec(1, 0))
+    // total top perimeter === total down perimeter
+    // total left perimeter === total right perimeter
+    fun calculateTotalPerimeter(plantPositions: Set<Pos>): Int = plantPositions.sumOf { pos ->
+        val neighbours = Vec.MOVES.map(pos::plus).count(plantPositions::contains)
+        4 - neighbours
+    }
 
-        fun calculateFencePrice(start: Pos, c: Char): Pair<Int, Int> {
-            var totalArea = 0
-            var totalPerimeter = 0
+    // total horizontal sides === total vertical sides
+    fun calculateTotalSides(plantPositions: Set<Pos>): Int {
+        val minX = plantPositions.minOf(Pos::x)
+        val maxX = plantPositions.maxOf(Pos::x)
+        val minY = plantPositions.minOf(Pos::y)
+        val maxY = plantPositions.maxOf(Pos::y)
 
-            var q = listOf(start)
-            val plants = mutableSetOf<Pos>()
-            while (q.isNotEmpty()) {
-                plants += q
-                totalArea += q.size
+        var totalSides = 0
 
-                q = q
-                    .flatMap { pos -> moves.map { move -> pos + move } }
-                    .filter { it in rect && input[it.y][it.x] == c }
-                    .filter { it !in plants }
-                    .distinct()
-            }
-            visited += plants
+        fun correctCondition(pos: Pos, move: Vec): Boolean =
+            pos in plantPositions && pos + move !in plantPositions
 
-            for (y in input.indices) {
-                var x = 0
-                while (x < input.size && (Pos(x, y) !in plants || Pos(x, y - 1) in plants)) x++
-                while (x < input.size) {
-                    while (Pos(x, y) in plants && Pos(x, y - 1) !in plants) x++
-                    while (x < input.size && (Pos(x, y) !in plants || Pos(x, y - 1) in plants)) x++
-                    totalPerimeter++
+        fun skipCondition(pos: Pos, move: Vec): Boolean =
+            pos.x <= maxX && !correctCondition(pos, move)
+
+        for (move in listOf(Vec.MOVE_UP, Vec.MOVE_DOWN)) {
+            for (y in minY..maxY) {
+                var x = minX
+                while (skipCondition(Pos(x, y), move)) x++
+                while (x <= maxX) {
+                    while (correctCondition(Pos(x, y), move)) x++
+                    while (skipCondition(Pos(x, y), move)) x++
+                    totalSides++
                 }
-            }
-            for (y in input.indices) {
-                var x = 0
-                while (x < input.size && (Pos(x, y) !in plants || Pos(x, y + 1) in plants)) x++
-                while (x < input.size) {
-                    while (Pos(x, y) in plants && Pos(x, y + 1) !in plants) x++
-                    while (x < input.size && (Pos(x, y) !in plants || Pos(x, y + 1) in plants)) x++
-                    totalPerimeter++
-                }
-            }
-            for (x in input.indices) {
-                var y = 0
-                while (y < input.size && (Pos(x, y) !in plants || Pos(x - 1, y) in plants)) y++
-                while (y < input.size) {
-                    while (Pos(x, y) in plants && Pos(x - 1, y) !in plants) y++
-                    while (y < input.size && (Pos(x, y) !in plants || Pos(x - 1, y) in plants)) y++
-                    totalPerimeter++
-                }
-            }
-            for (x in input.indices) {
-                var y = 0
-                while (y < input.size && (Pos(x, y) !in plants || Pos(x + 1, y) in plants)) y++
-                while (y < input.size) {
-                    while (Pos(x, y) in plants && Pos(x + 1, y) !in plants) y++
-                    while (y < input.size && (Pos(x, y) !in plants || Pos(x + 1, y) in plants)) y++
-                    totalPerimeter++
-                }
-            }
-
-            return totalArea to totalPerimeter
-        }
-
-        var sum = 0
-
-        for (x in input.indices) {
-            for (y in input.indices) {
-                if (Pos(x, y) in visited) continue
-
-                val (area, perimeter) = calculateFencePrice(Pos(x, y), input[y][x])
-                sum += area * perimeter
             }
         }
 
-        return sum
+        return totalSides * 2
+    }
+
+
+    fun part1(garden: List<String>): Int = discoverPlants(garden).sumOf { plantPositions ->
+        calculateTotalArea(plantPositions) * calculateTotalPerimeter(plantPositions)
+    }
+
+    fun part2(garden: List<String>): Int = discoverPlants(garden).sumOf { plantPositions ->
+        calculateTotalArea(plantPositions) * calculateTotalSides(plantPositions)
     }
 
 
