@@ -3,6 +3,7 @@ fun main() {
 
     fun part2(input: List<String>): Int = TODO()
 
+
     val input = readInputLines("day-${AOC_DAY}-input")
 
     part1(input).println()
