@@ -56,41 +56,46 @@ fun main() {
          * *******************************
          */
 
-        // It's hack to find the Easter Egg border
-        val pattern = """\*""".repeat(31).toRegex()
+        // It's a hack to find the Easter Egg border
+        val pattern = Regex("""\*{31}""")
 
         val sec = (0..<map.w * map.h)
             .asSequence()
-            .map { sec -> robots.asSequence().skip(sec, map).toList() }
-            .indexOfFirst { rs ->
+            .map { sec -> robots.asSequence().skip(sec, map).toSet() }
+            .indexOfFirst { robots ->
                 val image = buildString {
                     for (y in 0..<map.h) {
                         for (x in 0..<map.w) {
-                            append(if (Pos(x, y) in rs) '*' else '.')
+                            append(if (Pos(x, y) in robots) '*' else '.')
                         }
                         appendLine()
                     }
                 }
-                val isEasterEgg = image.findAll(pattern).count() == 2
+                val hasEasterEgg = image.findAll(pattern).count() >= 2
 
-                if (isEasterEgg) println(image)
+                if (hasEasterEgg) println(image)
 
-                return@indexOfFirst isEasterEgg
+                return@indexOfFirst hasEasterEgg
             }
 
         return sec
     }
 
 
-    val map = Rect(101, 103)
+    val map = Rect(w = 101, h = 103)
 
     val robots = readInputLines("day-14-input")
         .map { line ->
             val (p, v) = line.split(" ").map { it.drop(2) }.map { it.toInts(",").toPair() }
-            Robot(p.toPos(), v.toVec())
+            Robot(pos = p.toPos(), vel = v.toVec())
         }
         .map { robot ->
-            robot.copy(vel = Vec((robot.vel.x + map.w) % map.w, (robot.vel.y + map.h) % map.h))
+            robot.copy(
+                vel = Vec(
+                    x = (robot.vel.x + map.w) % map.w,
+                    y = (robot.vel.y + map.h) % map.h,
+                ),
+            )
         }
 
     part1(robots, map).println()
