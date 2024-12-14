@@ -1,4 +1,4 @@
-data class ClawMachine(
+private data class ClawMachine(
     val aBtnMove: VecLong,
     val bBtnMove: VecLong,
     val prizePos: PosLong,
@@ -16,14 +16,11 @@ fun main() {
         val bNum = pY * aX - pX * aY
         val den = aY * bX - aX * bY
 
-        return if (den != 0L) {
-            if (aNum % den == 0L && bNum % den == 0L) {
-                3 * (aNum / den) + (bNum / -den)
-            } else {
-                0
-            }
+        // Judging from the input: aY * bX != aX * bY
+        return if (aNum % den == 0L && bNum % den == 0L) {
+            3 * (aNum / den) + (bNum / -den)
         } else {
-            prizePos.x / aBtnMove.x
+            0
         }
     }
 
