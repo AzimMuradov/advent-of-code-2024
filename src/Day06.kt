@@ -19,32 +19,20 @@ private enum class Dir { U, R, D, L }
 
 suspend fun main() = coroutineScope {
     fun getInitPos(mapYX: List<String>): Pos {
-        val indices = mapYX.indices
-
-        for (x in indices) {
-            for (y in indices) {
-                if (mapYX[y][x] == '^') {
-                    return Pos(x, y)
-                }
-            }
+        mapYX.iterateMap { pos, c ->
+            if (c == '^') return pos
         }
-
         error("init pos missing")
     }
 
     fun getObstaclePositions(mapYX: List<String>): Pair<List<List<Int>>, List<List<Int>>> {
-        val indices = mapYX.indices
-        val size = mapYX.size
+        val obYX = List(mapYX.size) { mutableListOf<Int>() }
+        val obXY = List(mapYX.size) { mutableListOf<Int>() }
 
-        val obYX: List<MutableList<Int>> = List(size) { mutableListOf() }
-        val obXY: List<MutableList<Int>> = List(size) { mutableListOf() }
-
-        for (x in indices) {
-            for (y in indices) {
-                if (mapYX[y][x] == '#') {
-                    obYX[y] += x
-                    obXY[x] += y
-                }
+        mapYX.iterateMap { (x, y), c ->
+            if (c == '#') {
+                obYX[y] += x
+                obXY[x] += y
             }
         }
 

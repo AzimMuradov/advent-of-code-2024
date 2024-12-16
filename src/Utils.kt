@@ -103,7 +103,10 @@ inline fun <T> List<T>.indexOfLastOrNull(
     .indexOfLast(predicate)
     .takeUnless { it == -1 }
 
-fun List<String>.dim() = size to first().length
+fun List<String>.dim() = Rect(
+    w = size,
+    h = first().length,
+)
 
 fun List<String>.mirrorHor() = map(String::reversed)
 
@@ -116,6 +119,54 @@ fun List<String>.transpose(): List<String> {
             this[i][j]
         }.joinToString(separator = "")
     }
+}
+
+inline fun <T> Iterable<Iterable<T>>.iterate(b: (Int, Int, T) -> Unit) =
+    forEachIndexed { i, line ->
+        line.forEachIndexed { j, element ->
+            b(i, j, element)
+        }
+    }
+
+inline fun <T> List<T>.iteratePermutations(b: (T, T) -> Unit) {
+    for (i in 0..lastIndex) {
+        for (j in 0..lastIndex) {
+            b(this[i], this[j])
+        }
+    }
+}
+
+inline fun <T> List<T>.iterateOrderedCombinations(b: (T, T) -> Unit) {
+    for (i in 0..<lastIndex) {
+        for (j in i + 1..lastIndex) {
+            b(this[i], this[j])
+        }
+    }
+}
+
+inline fun <T> Iterable<Iterable<T>>.iterateMap(b: (Pos, T) -> Unit) {
+    forEachIndexed { y, line ->
+        line.forEachIndexed { x, element ->
+            b(Pos(x, y), element)
+        }
+    }
+}
+
+@JvmName("iterateMapString")
+inline fun Iterable<String>.iterateMap(b: (Pos, Char) -> Unit) {
+    forEachIndexed { y, line ->
+        line.forEachIndexed { x, c ->
+            b(Pos(x, y), c)
+        }
+    }
+}
+
+operator fun List<String>.get(pos: Pos) = this[pos.y][pos.x]
+
+operator fun <T> List<List<T>>.get(pos: Pos) = this[pos.y][pos.x]
+
+operator fun <T> List<MutableList<T>>.set(pos: Pos, value: T) {
+    this[pos.y][pos.x] = value
 }
 
 /**

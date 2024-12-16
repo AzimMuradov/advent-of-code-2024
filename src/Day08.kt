@@ -1,10 +1,8 @@
 fun main() {
     fun findAntennas(mapYX: List<String>): Map<Char, List<Pos>> =
         buildMap<Char, MutableList<Pos>> {
-            mapYX.forEachIndexed { y, line ->
-                line.forEachIndexed { x, freq ->
-                    getOrPut(freq, ::mutableListOf) += Pos(x, y)
-                }
+            mapYX.iterateMap { pos, freq ->
+                getOrPut(freq, ::mutableListOf) += pos
             }
             keys.filterNot(Char::isLetterOrDigit).forEach(::remove)
         }
@@ -17,11 +15,9 @@ fun main() {
 
         val antinodes = buildSet {
             antennas.forEach { freq, positions ->
-                for ((i, a) in positions.withIndex()) {
-                    for (b in positions.slice(i + 1..positions.lastIndex)) {
-                        add(a + 2 * (b - a))
-                        add(b + 2 * (a - b))
-                    }
+                positions.iterateOrderedCombinations { a, b ->
+                    add(a + 2 * (b - a))
+                    add(b + 2 * (a - b))
                 }
             }
         }
@@ -36,16 +32,14 @@ fun main() {
 
         val antinodes = buildSet {
             antennas.forEach { freq, positions ->
-                for ((i, a) in positions.withIndex()) {
-                    for (b in positions.slice(i + 1..positions.lastIndex)) {
-                        fun Sequence<Int>.addAntinodes() = this
-                            .map { n -> a + n * (b - a) }
-                            .takeWhile(rect::contains)
-                            .forEach(::add)
+                positions.iterateOrderedCombinations { a, b ->
+                    fun Sequence<Int>.addAntinodes() = this
+                        .map { n -> a + n * (b - a) }
+                        .takeWhile(rect::contains)
+                        .forEach(::add)
 
-                        generateSequence(0, Int::dec).addAntinodes()
-                        generateSequence(1, Int::inc).addAntinodes()
-                    }
+                    generateSequence(0, Int::dec).addAntinodes()
+                    generateSequence(1, Int::inc).addAntinodes()
                 }
             }
         }

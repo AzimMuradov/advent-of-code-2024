@@ -9,16 +9,12 @@ fun main() {
             .asSequence()
             .flatMap { pos -> Vec.MOVES.map { move -> pos + move } }
             .filter { pos -> pos in rect }
-            .filter { (x, y) -> map[y][x] == (height + 1).digitToChar() }
+            .filter { pos -> map[pos] == (height + 1).digitToChar() }
     }
 
     fun sumCalculations(map: TopographicMap, calculate: (Pos) -> Int): Int = sequence {
-        for (y in map.indices) {
-            for (x in map[y].indices) {
-                if (map[y][x] == '0') {
-                    yield(calculate(Pos(x, y)))
-                }
-            }
+        map.iterateMap { pos, c ->
+            if (c == '0') yield(calculate(pos))
         }
     }.sum()
 

@@ -10,7 +10,7 @@ fun main() {
                     val nextSearchWave = searchWave
                         .asSequence()
                         .flatMap { pos -> Vec.MOVES.map { move -> pos + move } }
-                        .filter { pos -> pos in rect && garden[pos.y][pos.x] == plant }
+                        .filter { pos -> pos in rect && garden[pos] == plant }
                         .filter { pos -> pos !in plantPositions }
                         .toSet()
                     nextSearchWave to plantPositions + nextSearchWave
@@ -21,14 +21,9 @@ fun main() {
             return searchSequence.last().second
         }
 
-        for (x in garden.indices) {
-            for (y in garden.indices) {
-                if (Pos(x, y) in visited) continue
-
-                val plantPositions = searchForPlants(
-                    start = Pos(x, y),
-                    plant = garden[y][x],
-                )
+        garden.iterateMap { pos, plant ->
+            if (pos !in visited) {
+                val plantPositions = searchForPlants(start = pos, plant)
                 visited += plantPositions
 
                 add(plantPositions)

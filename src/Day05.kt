@@ -4,12 +4,8 @@ private typealias Update = List<Int>
 
 fun main() {
     fun Update.isCorrect(rules: Set<Rule>): Boolean {
-        for ((i, a) in withIndex()) {
-            for (b in slice(i + 1..lastIndex)) {
-                if (Rule(b, a) in rules) {
-                    return false
-                }
-            }
+        iterateOrderedCombinations { a, b ->
+            if (Rule(b, a) in rules) return false
         }
         return true
     }
